@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import {useState, useEffect} from "react";
 
 import ContactsForm from './ContactsForm/ContactsForm.js';
 
@@ -9,29 +9,20 @@ import Filter from "./Filter/Filter.js";
 import css from './contactsbook.module.css'
 
 
-class ContactsBook extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+function ContactsBook() {
+  const [contacts, setContact] = useState(
+    () => JSON.parse(localStorage.getItem('contacts')) ?? []
+  );
 
+  const [filter, setFilter] = useState('');
 
-  componentDidMount() {
-    if (localStorage.getItem('contacts')) {
-      this.setState({contacts: JSON.parse(localStorage.getItem('contacts'))})
-    };
-  };
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts))
+  }, [contacts]);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.contact?.length !== JSON.parse(localStorage.getItem('contacts'))) {
-      localStorage.setItem('contacts', JSON.stringify(this.state.contacts))
-    }
-  }
-
-  contactSubmitHandler = data => {
+  const contactSubmitHandler = data => {
     const { name, number } = data;
-    if (this.state.contacts.find((contact) => contact.name === name || contact.number === number)) {
+    if (contacts.find((contact) => contact.name === name || contact.number === number)) {
       alert('this contact already exist');
       return;
     }
@@ -42,61 +33,43 @@ class ContactsBook extends Component {
       number: number,
     };
 
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, contact]
-    }));
+    setContact(prev => [...prev, contact]);
   };
 
-  contactsFilterChange = (name, value) => {
-    this.setState({ [name]: value });
-  };
-
-  handlerDeleteContact = (id) => {
-
-    this.setState(prevState => {
-      const newContactsList =
-        prevState.contacts.reduce((acc, con) => {
+  const handlerDeleteContact = (id) => {
+    setContact(prev => prev.reduce((acc, con) => {
         if (con.id !== id) {
-          acc.push(con)
+          acc.push(con);
         };
-        return acc
-        }, [])
-      return {contacts: newContactsList}
-    }
-    );
+        return acc;
+      }, [])
+    )
   };
-
-  render() {
-    const { filter, contacts } = this.state;
-    
-    return (
-      <div className={css.container}>
-        <h1 className={css.header}>Phonebook</h1>
-        <ContactsForm onSubmit={this.contactSubmitHandler} />
-        <div>
-          <h2 className={css.title}>Contacts</h2>
-          {contacts.length > 0 &&
-            <div>
-              <Filter
+  
+  return (
+    <div className={css.container}>
+      <h1 className={css.header}>Phonebook</h1>
+      <ContactsForm onSubmit={contactSubmitHandler} />
+      <div>
+        <h2 className={css.title}>Contacts</h2>
+        {contacts.length > 0 &&
+          <div>
+            <Filter
+              filter={filter}
+              contactsFilterHandler={(value) => setFilter(value)}
+            />
+            <ul className={css.list}>
+              <ContactsList
+                contacts={contacts}
                 filter={filter}
-                contactsFilterHandler={this.contactsFilterChange}
+                handlerDeleteContact={handlerDeleteContact}
               />
-              <ul className={css.list}>
-                <ContactsList
-                  contacts={contacts}
-                  filter={filter}
-                  handlerDeleteContact={this.handlerDeleteContact}
-                />
-              </ul>
-            </div>
-          }
-        </div>
+            </ul>
+          </div>
+        }
       </div>
-    );
-  };
+    </div>
+  );
 };
-
-
-
 
 export default ContactsBook;

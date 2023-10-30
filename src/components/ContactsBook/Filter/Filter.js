@@ -1,28 +1,23 @@
-import React, { Component } from "react";
-
 import PropTypes from "prop-types";
 
 import css from './filter.module.css'
 
-class Filter extends Component {
+function Filter({filter,contactsFilterHandler}) {
 
-    handlerInputChange = event => {
-    const { contactsFilterHandler } = this.props;
-    contactsFilterHandler(event.currentTarget.name, event.currentTarget.value);
+  const handlerInputChange = event => {
+    contactsFilterHandler(event.target.value)
   };
 
-  render() {
-    return (
-      <input
-        type="text"
-        name='filter'
-        value={this.props.filter}
-        onChange={this.handlerInputChange}
-        placeholder="find contacts by name"
-        className={css.input}
-      ></input>
-    )
-  };
+  return (
+    <input
+      type="text"
+      name='filter'
+      value={filter}
+      onChange={handlerInputChange}
+      placeholder="find contacts by name"
+      className={css.input}
+    ></input>
+  );
 };
 
 
